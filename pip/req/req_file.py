@@ -8,6 +8,7 @@ import os
 import re
 import shlex
 import optparse
+import logging
 
 from pip._vendor.six.moves.urllib import parse as urllib_parse
 from pip._vendor.six.moves import filterfalse
@@ -53,6 +54,8 @@ SUPPORTED_OPTIONS_REQ = [
 # the 'dest' string values
 SUPPORTED_OPTIONS_REQ_DEST = [o().dest for o in SUPPORTED_OPTIONS_REQ]
 
+logger = logging.getLogger(__name__)
+
 
 def parse_requirements(filename, finder=None, comes_from=None, options=None,
                        session=None, constraint=False, wheel_cache=None):
@@ -83,11 +86,14 @@ def parse_requirements(filename, finder=None, comes_from=None, options=None,
     lines = skip_regex(lines, options)
 
     for line_number, line in enumerate(lines, 1):
-        req_iter = process_line(line, filename, line_number, finder,
-                                comes_from, options, session, wheel_cache,
-                                constraint=constraint)
-        for req in req_iter:
-            yield req
+        try:
+            req_iter = process_line(line, filename, line_number, finder,
+                                    comes_from, options, session, wheel_cache,
+                                    constraint=constraint)
+            for req in req_iter:
+                yield req
+        except Exception as e:
+            logger.warn("Error processing line `%s` in requirements file.", line)
 
 
 def process_line(line, filename, line_number, finder=None, comes_from=None,
