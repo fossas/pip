@@ -137,7 +137,7 @@ class InstallRequirement(object):
     @classmethod
     def from_line(
             cls, name, comes_from=None, isolated=False, options=None,
-            wheel_cache=None, constraint=False):
+            wheel_cache=None, constraint=False, check_compatibility=False):
         """Creates an InstallRequirement from a name, which might be a
         requirement, directory containing 'setup.py', filename, or URL.
         """
@@ -191,7 +191,7 @@ class InstallRequirement(object):
             # wheel file
             if link.is_wheel:
                 wheel = Wheel(link.filename)  # can raise InvalidWheelFilename
-                if not wheel.supported():
+                if check_compatibility and not wheel.supported():
                     raise UnsupportedWheel(
                         "%s is not a supported wheel on this platform." %
                         wheel.filename
